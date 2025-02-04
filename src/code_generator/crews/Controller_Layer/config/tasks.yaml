@@ -1,0 +1,14 @@
+generate_controller_layer:
+  description: >
+    Parse the {api_result} to generate the controller layer for the Spring Boot application.
+    Based on the Implementation Requirements for the Spring Boot Application, create a fully functional controller layer with the following steps:
+    - Create Java controller classes for all API endpoints extracted from the {api_result}.
+    - Implement methods in the controller classes to interact with the service layer for all CRUD operations.
+    - Add Swagger annotations to the controller classes to generate API documentation.
+    - Compare generated controller classes against the task list provided by the tech lead and perform any missing tasks.
+    - Create REST controllers with appropriate mappings for all API endpoints.
+  expected_output: >
+    Java controller class files for handling API requests, following RESTful principles and adhering to the existing boilerplate folder structure in the {project_name} folder.
+    - The generated files should be placed in the existing boilerplate folder structure within the folder at {controller_path}.
+    - If there is no folder at {controller_path}, create a folder named controller and place the generated files in it.
+    - The generated files should be structured properly following Spring Boot conventions.

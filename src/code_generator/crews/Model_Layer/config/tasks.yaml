@@ -12,7 +12,7 @@ generate_model_layer:
   expected_output: >
     Java entity class files for all data models extracted from the {api_result},
     adhering to the existing boilerplate folder structure in the {project_name} folder.
-    - The generated files should be placed in the exisiting boilerplate folder structure within the folder which is in this path {models_path}.
-    - If there is no folder is there in the path {models_path} then create a folder with the name Models and place the generated files in it.
+    - The generated files should be placed in the exisiting boilerplate folder structure within the folder which is in this path {entity_path}.
+    - If there is no folder is there in the path {entity_path} then create a folder with the name entity and place the generated files in it.
     - The generated files should be written in the proper spiring boot file structure.
 

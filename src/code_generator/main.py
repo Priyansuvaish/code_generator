@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 from crewai.flow.flow import Flow, listen, start
 
+from code_generator.crews.Controller_Layer.Controller_Layer import ControllerLayer
+from code_generator.crews.Service_Layer.Service_Layer import ServiceLayer
 from code_generator.crews.api_parser.api_parser import ApiParser
 from code_generator.crews.Model_Layer.Model_Layer import ModelLayer
 import requests
@@ -27,7 +29,11 @@ class PoemState(BaseModel):
     base_url:str = "https://start.spring.io/starter.zip"
     api_result: dict = {}
     entity_result: dict = {}
-    model_path: str = ""
+    entity_path: str = ""
+    service_result: dict = {}
+    service_path: str = ""
+    controller_path: str = ""
+    controller_result: dict = {}
     
     
 
@@ -109,22 +115,22 @@ spring.h2.console.enabled=true
             .kickoff()
         )
 
-        print("api result: ", result.raw)
+        # print("api result: ", result.raw)
         self.state.api_result = result.raw  # Save the result in state
         print("API parsed successfully and stored in state.")
     
     @listen(api_parser)
     def generate_model(self):
-        print("Generating model")
+        print("Generating model layer")
         print("API Result: ", self.state.api_result)
         # Example base path
         base_path = os.path.join(self.state.project_name, "src", "main", "java")
         # Convert package name to directory path
         package_path = self.state.package_name.replace('.', os.sep)
         # Full path to the models directory
-        models_path = os.path.join(base_path, package_path, "Models")
-        self.state.model_path = models_path
-        print(f"Models directory path: {models_path}")
+        entity_path = os.path.join(base_path, package_path, "entity")
+        self.state.entity_path = entity_path
+        print(f"Entity directory path: {entity_path}")
         result = (
             ModelLayer()
             .crew()
@@ -132,13 +138,65 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'models_path': models_path
+                'entity_path': entity_path
             })
         )
-        print("Model result: ", result.raw)
+        # print("Model result: ", result.raw)
         self.state.entity_result = result.raw  # Save the result in state
-        print("Entity Model successfully and stored in state.")
+        print("Entity_layer successfully and stored in state.")
 
+    
+    @listen(generate_model)
+    def generate_service(self):
+        print("Generating service layer")
+        # Example base path
+        base_path = os.path.join(self.state.project_name, "src", "main", "java")
+        # Convert package name to directory path
+        package_path = self.state.package_name.replace('.', os.sep)
+        # Full path to the models directory
+        service_path = os.path.join(base_path, package_path, "service")
+        self.state.service_path = service_path
+        print(f"Service directory path: {service_path}")
+        result = (
+            ServiceLayer()
+            .crew()
+            .kickoff(inputs={
+                'api_result': self.state.api_result,
+                'project_name': self.state.project_name,
+                'package_name': self.state.package_name,
+                'models_path': service_path
+            })
+        )
+        # print("Model result: ", result.raw)
+        self.state.service_result = result.raw  # Save the result in state
+        print("Service_Layer successfully and stored in state.")
+
+    @listen(generate_service)
+    def generate_controller(self):
+        print("Generating controller layer")
+        # Example base path
+        base_path = os.path.join(self.state.project_name, "src", "main", "java")
+        # Convert package name to directory path
+        package_path = self.state.package_name.replace('.', os.sep)
+        # Full path to the models directory
+        controller_path = os.path.join(base_path, package_path, "controller")
+        self.state.controller_path = controller_path
+        print(f"Controller directory path: {controller_path}")
+        result = (
+            ControllerLayer()
+            .crew()
+            .kickoff(inputs={
+                'api_result': self.state.api_result,
+                'project_name': self.state.project_name,
+                'package_name': self.state.package_name,
+                'controller_path': controller_path
+            })
+        )
+        # print("Controller result: ", result.raw)
+        self.state.controller_result = result.raw  # Save the result in state
+        print("Controller_Layer successfully and stored in state.")
+
+        
 def kickoff():
     poem_flow = PoemFlow()
     poem_flow.kickoff()
