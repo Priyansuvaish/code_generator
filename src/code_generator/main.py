@@ -3,8 +3,9 @@ from random import randint
 
 from pydantic import BaseModel
 
-from crewai.flow.flow import Flow, listen, start
+from crewai.flow.flow import Flow, listen, start, router, or_
 
+from code_generator.crews.Api_Parser_Evaluator.api_parser_evaluator import ApiParserEvaluator
 from code_generator.crews.Controller_Layer.Controller_Layer import ControllerLayer
 from code_generator.crews.Service_Layer.Service_Layer import ServiceLayer
 from code_generator.crews.api_parser.api_parser import ApiParser
@@ -34,6 +35,7 @@ class PoemState(BaseModel):
     service_path: str = ""
     controller_path: str = ""
     controller_result: dict = {}
+    count: int = 0
     
     
 
@@ -106,7 +108,7 @@ spring.h2.console.enabled=true
         print(f"application.properties configured successfully at {properties_file_path}")
 
 
-    @listen(configure_application_properties)
+    @listen(or_("Unsuccessful",configure_application_properties))
     def api_parser(self):
         print("parsing the api")
         result = (
@@ -117,9 +119,35 @@ spring.h2.console.enabled=true
 
         # print("api result: ", result.raw)
         self.state.api_result = result.raw  # Save the result in state
+        file_path = "api_result.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"api result: {self.state.api_result}\n")
+
+        print(f"API result written to {file_path}")
         print("API parsed successfully and stored in state.")
+
+
+    @router(api_parser)
+    def evaluate_api_parser(self):
+        print("Evaluating the API parser result")
+        if(self.state.count>3):
+            return "Successful"
+        self.state.count += 1
+        # print("API Result: ", self.state.api_result)
+        result = (
+            ApiParserEvaluator()
+            .crew()
+            .kickoff(inputs={'api_result': self.state.api_result})
+        )
+        if result.raw == "Successful":
+            return "Successful"
+        return "Unsuccessful"
+        
+        
     
-    @listen(api_parser)
+    @listen("Successful")
     def generate_model(self):
         print("Generating model layer")
         print("API Result: ", self.state.api_result)
