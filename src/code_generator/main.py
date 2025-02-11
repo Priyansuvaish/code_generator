@@ -30,10 +30,8 @@ class PoemState(BaseModel):
     base_url:str = "https://start.spring.io/starter.zip"
     api_result: dict = {}
     entity_result: dict = {}
-    entity_path: str = ""
+    folder_path: str = ""
     service_result: dict = {}
-    service_path: str = ""
-    controller_path: str = ""
     controller_result: dict = {}
     count: int = 0
     
@@ -141,9 +139,16 @@ spring.h2.console.enabled=true
             .crew()
             .kickoff(inputs={'api_result': self.state.api_result})
         )
+        file_path = "api_result_1.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"api 1 result: {result.raw}\n")
+
         if result.raw == "Successful":
             return "Successful"
         return "Unsuccessful"
+
         
         
     
@@ -156,9 +161,9 @@ spring.h2.console.enabled=true
         # Convert package name to directory path
         package_path = self.state.package_name.replace('.', os.sep)
         # Full path to the models directory
-        entity_path = os.path.join(base_path, package_path, "entity")
-        self.state.entity_path = entity_path
-        print(f"Entity directory path: {entity_path}")
+        folder_path = os.path.join(base_path, package_path, self.state.project_name)
+        self.state.folder_path = folder_path
+        print(f"Entity directory path: {folder_path}")
         result = (
             ModelLayer()
             .crew()
@@ -166,7 +171,7 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'entity_path': entity_path
+                'folder_path': folder_path
             })
         )
         # print("Model result: ", result.raw)
@@ -177,14 +182,6 @@ spring.h2.console.enabled=true
     @listen(generate_model)
     def generate_service(self):
         print("Generating service layer")
-        # Example base path
-        base_path = os.path.join(self.state.project_name, "src", "main", "java")
-        # Convert package name to directory path
-        package_path = self.state.package_name.replace('.', os.sep)
-        # Full path to the models directory
-        service_path = os.path.join(base_path, package_path, "service")
-        self.state.service_path = service_path
-        print(f"Service directory path: {service_path}")
         result = (
             ServiceLayer()
             .crew()
@@ -192,7 +189,7 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'models_path': service_path
+                'folder_path': self.state.folder_path
             })
         )
         # print("Model result: ", result.raw)
@@ -202,14 +199,6 @@ spring.h2.console.enabled=true
     @listen(generate_service)
     def generate_controller(self):
         print("Generating controller layer")
-        # Example base path
-        base_path = os.path.join(self.state.project_name, "src", "main", "java")
-        # Convert package name to directory path
-        package_path = self.state.package_name.replace('.', os.sep)
-        # Full path to the models directory
-        controller_path = os.path.join(base_path, package_path, "controller")
-        self.state.controller_path = controller_path
-        print(f"Controller directory path: {controller_path}")
         result = (
             ControllerLayer()
             .crew()
@@ -217,7 +206,7 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'controller_path': controller_path
+                'folder_path': self.state.folder_path
             })
         )
         # print("Controller result: ", result.raw)

@@ -1,7 +1,9 @@
 evaluate_api_parser_result:
   description: >
-    Review the parsed API contract details produced by the parsing agent. Validate that all API endpoints, data models, database schemas, and service methods are correctly extracted and structured. Check for any missing information, inconsistencies, or ambiguities.
+    Review the {api_result} details produced by the parsing agent. Validate that all API endpoints, .data models, database schemas, and service methods are correctly extracted and structured. Check for any missing information, inconsistencies, or ambiguities.
+    Review the {api_result} on the API contract which you are reading
   expected_output: >
     - "Successful" if the parsed contract is complete, accurate, and clear.
     - "Unsuccessful" if there are missing details, inconsistencies, or ambiguities.
+    - I only want output either "Successful" or "Unsuccessful".
 

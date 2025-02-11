@@ -2,4 +2,4 @@ parse_api_contract:
   description: >
     Parse and carefully analyze the provided OpenAPI 3.0 contract and extract all the necessary details to define the implementation requirements. Break these requirements down into clear tasks for building the Controller, Service, and Repository layers, along with all the data models needed for each API. Organize this information systematically by API tags to ensure every aspect is addressed.
   expected_output: >
-    Complete and Detailed tasks for each layer, including all endpoint details, all data models, all database schema, and all service methods.
+    Complete and Detailed tasks for each layer, including all endpoint details, all data models, all database schema, and all service methods.Organize this information systematically by API tags to ensure every aspect is addressed.

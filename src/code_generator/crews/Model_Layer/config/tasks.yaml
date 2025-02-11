@@ -1,18 +1,20 @@
 generate_model_layer:
   description: >
-    Parse the {api_result} to generate the model layer for the Spring Boot application.
-    Based on the Implementation Requirements for the Spring Boot Application, create a fully functional model layer with the following steps:
-    - Create Java entity classes for all data models extracted from the {api_result}.
-    - Generate JPA entity classes using the `jakarta.persistence` package (not `javax.persistence`) and add Lombok annotations (`@Getter`, `@Setter`, and optionally `@NoArgsConstructor` and `@AllArgsConstructor`) to entity classes to auto-generate getters and setters.
+    Extract relavent information from {api_result} to generate the model layer for the Spring Boot application.
+    Based on the extracted data models, create fully functional entity classes with the following steps:
+    - Identify all data models from {api_result} and generate corresponding Java entity classes.
+    - Use `@Entity` and `@Table(name = "<table_name>_entity")` annotations to define JPA entities.
+    - Utilize the `jakarta.persistence` package for annotations (not `javax.persistence`).
+    - Implement relationships (`@OneToMany`, `@ManyToOne`, `@ManyToMany`) based on the model dependencies.
+    - Use Lombok annotations (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`) to reduce boilerplate code.
+    - Create the `schema.sql` file for database table definitions in `/src/main/resources/`.
+    - If necessary, generate a `data.sql` file with sample data.
     - Create Spring Data JPA repository interfaces.
-    - Append `_entity` to all table names in the `schema.sql` file and JPA `@Table` annotations to avoid clashes with reserved keywords and ensuring that `@Table` annotations match the table names in `schema.sql`.
-    - Write `schema.sql` and `data.sql` files for the H2 database in `/src/main/resources/`.
     - Compare generated JPA entity classes and created JPA repository interfaces against the task list provided by the tech lead and perform any missing tasks.
 
   expected_output: >
-    Java entity class files for all data models extracted from the {api_result},
-    adhering to the existing boilerplate folder structure in the {project_name} folder.
-    - The generated files should be placed in the exisiting boilerplate folder structure within the folder which is in this path {entity_path}.
-    - If there is no folder is there in the path {entity_path} then create a folder with the name entity and place the generated files in it.
-    - The generated files should be written in the proper spiring boot file structure.
-
+    Java entity class files dynamically generated based on {api_result}, ensuring proper handling of data persistence.
+    Create required Spring Data JPA repository interfaces.
+    - The generated files should be placed in the existing boilerplate folder structure at {folder_path}.
+    - If no folder exists at {folder_path}, create a folder named `entity` in the same path and place the generated files inside.
+    - Ensure entity classes follow Spring Boot best practices and match the table definitions in `schema.sql`.
