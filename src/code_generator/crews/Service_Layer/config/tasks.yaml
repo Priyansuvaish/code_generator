@@ -1,16 +1,21 @@
 generate_service_layer:
   description: >
-    Extract relavent information from  {api_result} to generate the service layer for the Spring Boot application.
-    Based on the provided API contract, create a fully functional service layer with the following steps:
-    - Identify all required service classes from {api_result} and generate corresponding Java classes.
-    - Implement methods in each service class based on the API endpoints and required business logic extracted from {api_result}.
-    - Ensure each service class interacts with its respective repository and model layer.
-    - Use `@Service` annotation for each service class and `@Transactional` where needed.
-    - Follow best practices for dependency injection using `@Autowired` or constructor injection.
-    - Validate the generated service classes against the API contract to ensure all required methods are implemented.
+    Extract relevant information from {api_result} to generate the service layer for the Spring Boot application.
+    Based on the extracted service methods, create a fully functional service layer with the following steps:
+    - Identify all service methods from {api_result} and generate corresponding Java service classes.
+    - Implement methods in the service classes to interact with the model layer for all CRUD operations.
+    - Identify necessary repository methods that need to be defined for data access.
+    - Create corresponding Spring Data JPA repository interfaces based on the service layer requirements.
+    - Implement custom query methods in the repository layer using derived queries or `@Query` annotations where necessary.
+    - Compare generated service classes and repository interfaces against the task list provided in {api_result} by the tech lead and perform any missing tasks.
 
   expected_output: >
-    Java service class files dynamically generated based on {api_result}, ensuring proper handling of business logic.
+    Java service class files for handling business logic, adhering to the existing boilerplate folder structure at {folder_path}.
+    - The generated files should be placed in the existing boilerplate folder structure within {folder_path}.
+    - If no folder exists at {folder_path}, create a folder named `service` in the same path and place the generated files inside.
+    - Ensure service classes follow Spring Boot best practices and are properly structured.
+    
+    Java repository interface files dynamically generated based on service layer requirements.
     - The generated files should be placed in the existing boilerplate folder structure at {folder_path}.
-    - If there is no folder at {folder_path}, create a `service` folder in the same path and place the generated files inside.
-    - Ensure service methods align with the parsed API contract, maintaining best practices in Spring Boot.
+    - If no folder exists at {folder_path}, create a folder named `repository` in the same path and place the generated files inside.
+    - Ensure repository interfaces include all necessary methods required by the service layer.
