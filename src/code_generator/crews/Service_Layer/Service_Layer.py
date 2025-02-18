@@ -1,16 +1,25 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import FileReadTool,FileWriterTool
+from crewai_tools import FileReadTool,FileWriterTool,DirectoryReadTool
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import os
+
+from pydantic import BaseModel
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 load_dotenv()
+# class ServiceLayerdata(BaseModel):
+#     folder_path:str=""
+#     project_name: str = ""
+#     api_result: dict = {}
+#     package_name: str = ""
+
+
 
 @CrewBase
-class ServiceLayer:
+class ServiceLayer():
     
 
     # Learn more about YAML configuration files here:
@@ -22,16 +31,20 @@ class ServiceLayer:
 
     # If you would lik to add tools to your crew, you can learn more about it here:
     # https://docs.crewai.com/concepts/agents#agent-tools
+
+    def __init__(self,folder_path:str):
+        self.folder_path=folder_path
     @agent
     def service_developer(self) -> Agent:
         if 'service_developer' not in self.agents_config:
             raise KeyError("Missing configuration for 'service_developer' in agents_config.")
+        print("folder_path for service 231",self.folder_path)
         return Agent(
             config=self.agents_config['service_developer'],
             allow_delegation=True,
             verbose=True,
             llm="gpt-4o",
-            tools=[FileWriterTool()],
+            tools=[FileWriterTool(),DirectoryReadTool(directory=self.folder_path)],
             memory=False
         )
 

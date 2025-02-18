@@ -44,8 +44,8 @@ class PoemState(BaseModel):
 
 class PoemFlow(Flow[PoemState]):
 
+    @start()  
     #We are taking the input from the user and creating a spring boot project
-    @start()
     def Intialization(self):
         print("Provide the details")
         self.state.project_name = input("Enter the project name: ")
@@ -54,10 +54,57 @@ class PoemFlow(Flow[PoemState]):
         self.state.java_version = input("Enter Java version (default 11): ") or '11'
         self.state.language = input("Enter language (java/kotlin, default java): ") or 'java'
 
+    #We are parsing the api and storing the result in the state
+    @listen(or_("Unsuccessful",Intialization))
+    def api_parser(self):
+        print("parsing the api")
+        result = (
+            ApiParser()
+            .crew()
+            .kickoff()
+        )
+
+        # print("api result: ", result.raw)
+        self.state.api_result = result.raw  # Save the result in state
+        file_path = "api_result_3.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"api result: {self.state.api_result}\n")
+
+        print(f"API result written to {file_path}")
+        print("API parsed successfully and stored in state.")
+
+
+
+    #We are evaluating the api parser result and if it is successful we are generating the model layer
+    #If the api parser result is unsuccessful we are again parsing the api
+    @router(api_parser)
+    def evaluate_api_parser(self):
+        print("Evaluating the API parser result")
+        if(self.state.count>3):
+            return "Successful"
+        self.state.count += 1
+        # print("API Result: ", self.state.api_result)
+        result = (
+            ApiParserEvaluator()
+            .crew()
+            .kickoff(inputs={'api_result': self.state.api_result})
+        )
+        file_path = "evaluator_result.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"evaluator result: {result.raw}\n")
+
+        if result.raw == "Successful":
+            return "Successful"
+        return "Unsuccessful"
+
     
 
     #We are creating a spring boot project using the details provided by the user
-    @listen(or_(Intialization,"Failed"))
+    @listen(or_("Successful","Failed"))
     def generate_spring_boot_project(self):
         params = {
             'type': f'{self.state.build_type}-project',
@@ -115,61 +162,11 @@ spring.h2.console.enabled=true
         print(f"application.properties configured successfully at {properties_file_path}")
 
 
-
-
-
-    #We are parsing the api and storing the result in the state
-    @listen(or_("Unsuccessful",configure_application_properties))
-    def api_parser(self):
-        print("parsing the api")
-        result = (
-            ApiParser()
-            .crew()
-            .kickoff()
-        )
-
-        # print("api result: ", result.raw)
-        self.state.api_result = result.raw  # Save the result in state
-        file_path = "api_result.md"
-
-        # Write the API result to the file
-        with open(file_path, "w") as file:
-            file.write(f"api result: {self.state.api_result}\n")
-
-        print(f"API result written to {file_path}")
-        print("API parsed successfully and stored in state.")
-
-
-
-    #We are evaluating the api parser result and if it is successful we are generating the model layer
-    #If the api parser result is unsuccessful we are again parsing the api
-    @router(api_parser)
-    def evaluate_api_parser(self):
-        print("Evaluating the API parser result")
-        if(self.state.count>3):
-            return "Successful"
-        self.state.count += 1
-        # print("API Result: ", self.state.api_result)
-        result = (
-            ApiParserEvaluator()
-            .crew()
-            .kickoff(inputs={'api_result': self.state.api_result})
-        )
-        file_path = "api_result_1.md"
-
-        # Write the API result to the file
-        with open(file_path, "w") as file:
-            file.write(f"api 1 result: {result.raw}\n")
-
-        if result.raw == "Successful":
-            return "Successful"
-        return "Unsuccessful"
-
         
         
     
     #If the api parser result is successful we are generating the model layer
-    @listen("Successful")
+    @listen(configure_application_properties)
     def generate_model(self):
         print("Generating model layer")
         print("API Result: ", self.state.api_result)
@@ -193,6 +190,11 @@ spring.h2.console.enabled=true
         )
         # print("Model result: ", result.raw)
         self.state.entity_result = result.raw  # Save the result in state
+        file_path = "model_result.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"model result: {self.state.entity_result}\n")
         print("Entity_layer successfully and stored in state.")
 
     
@@ -202,7 +204,7 @@ spring.h2.console.enabled=true
     def generate_service(self):
         print("Generating service layer")
         result = (
-            ServiceLayer()
+            ServiceLayer(folder_path=self.state.folder_path)
             .crew()
             .kickoff(inputs={
                 'api_result': self.state.api_result,
@@ -213,6 +215,11 @@ spring.h2.console.enabled=true
         )
         # print("Model result: ", result.raw)
         self.state.service_result = result.raw  # Save the result in state
+        file_path = "service_result.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"service result: {self.state.service_result}\n")
         print("Service_Layer successfully and stored in state.")
 
 
@@ -222,7 +229,7 @@ spring.h2.console.enabled=true
     def generate_controller(self):
         print("Generating controller layer")
         result = (
-            ControllerLayer()
+            ControllerLayer(folder_path=self.state.folder_path)
             .crew()
             .kickoff(inputs={
                 'api_result': self.state.api_result,
@@ -233,6 +240,11 @@ spring.h2.console.enabled=true
         )
         # print("Controller result: ", result.raw)
         self.state.controller_result = result.raw  # Save the result in state
+        file_path = "controller_result.md"
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"controller result: {self.state.controller_result}\n")
         print("Controller_Layer successfully and stored in state.")
 
     @router(generate_controller)
@@ -248,17 +260,18 @@ spring.h2.console.enabled=true
             .crew()
             .kickoff()
         )
-        file_path = "final_result.md"
+        file_path = "Tester_result.md"
         self.state.Pass=result["Pass"]
         self.state.feedback=result["feedback"]
 
         # Write the API result to the file
         with open(file_path, "w") as file:
-            file.write(f"final result: {self.state.feedback}\n")
+            file.write(f"Tester result: {self.state.feedback}\n")
 
-        if self.state.Pass == "True":
-            return "Passed"
-        return "Failed"
+        # if self.state.Pass == "True":
+        #     return "Passed"
+        # return "Failed"
+        return "Done"
     
     @listen("Done")
     def done(self):
