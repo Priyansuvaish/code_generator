@@ -4,6 +4,7 @@ generate_controller_layer:
     Based on the Implementation Requirements for the Spring Boot Application, create a fully functional controller layer with the following steps:
     - Create Java controller classes for all API endpoints extracted from the {api_result}.
     - Implement methods in the controller classes to interact with the service layer for all CRUD operations.
+    - The service layer is located in the {folder_path} folder.
     - Add Swagger annotations to the controller classes to generate API documentation.
     - Compare generated controller classes against the task list provided in the {api_result} by the tech lead and perform any missing tasks.
     - Create REST controllers with appropriate mappings for all API endpoints.

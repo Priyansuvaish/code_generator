@@ -2,11 +2,12 @@
 from random import randint
 
 from pydantic import BaseModel
-
+from typing import Optional
 from crewai.flow.flow import Flow, listen, start, router, or_
 
 from code_generator.crews.Api_Parser_Evaluator.api_parser_evaluator import ApiParserEvaluator
 from code_generator.crews.Controller_Layer.Controller_Layer import ControllerLayer
+from code_generator.crews.QA_Testing.QA_Testing import QaTester
 from code_generator.crews.Service_Layer.Service_Layer import ServiceLayer
 from code_generator.crews.api_parser.api_parser import ApiParser
 from code_generator.crews.Model_Layer.Model_Layer import ModelLayer
@@ -34,12 +35,16 @@ class PoemState(BaseModel):
     service_result: dict = {}
     controller_result: dict = {}
     count: int = 0
+    flag: int =0
+    feedback:Optional[str]=None
+    Pass:bool=False
     
     
 
 
 class PoemFlow(Flow[PoemState]):
 
+    #We are taking the input from the user and creating a spring boot project
     @start()
     def Intialization(self):
         print("Provide the details")
@@ -49,7 +54,10 @@ class PoemFlow(Flow[PoemState]):
         self.state.java_version = input("Enter Java version (default 11): ") or '11'
         self.state.language = input("Enter language (java/kotlin, default java): ") or 'java'
 
-    @listen(Intialization)
+    
+
+    #We are creating a spring boot project using the details provided by the user
+    @listen(or_(Intialization,"Failed"))
     def generate_spring_boot_project(self):
         params = {
             'type': f'{self.state.build_type}-project',
@@ -85,6 +93,7 @@ class PoemFlow(Flow[PoemState]):
             return "Failed"
         
 
+    #creating the application.properties file
     @listen(generate_spring_boot_project)
     def configure_application_properties(self):
         properties_content = """spring.datasource.url=jdbc:h2:mem:testdb
@@ -106,6 +115,10 @@ spring.h2.console.enabled=true
         print(f"application.properties configured successfully at {properties_file_path}")
 
 
+
+
+
+    #We are parsing the api and storing the result in the state
     @listen(or_("Unsuccessful",configure_application_properties))
     def api_parser(self):
         print("parsing the api")
@@ -127,6 +140,9 @@ spring.h2.console.enabled=true
         print("API parsed successfully and stored in state.")
 
 
+
+    #We are evaluating the api parser result and if it is successful we are generating the model layer
+    #If the api parser result is unsuccessful we are again parsing the api
     @router(api_parser)
     def evaluate_api_parser(self):
         print("Evaluating the API parser result")
@@ -152,6 +168,7 @@ spring.h2.console.enabled=true
         
         
     
+    #If the api parser result is successful we are generating the model layer
     @listen("Successful")
     def generate_model(self):
         print("Generating model layer")
@@ -179,6 +196,8 @@ spring.h2.console.enabled=true
         print("Entity_layer successfully and stored in state.")
 
     
+
+    #We are generating the service layer
     @listen(generate_model)
     def generate_service(self):
         print("Generating service layer")
@@ -196,6 +215,9 @@ spring.h2.console.enabled=true
         self.state.service_result = result.raw  # Save the result in state
         print("Service_Layer successfully and stored in state.")
 
+
+
+    #We are generating the controller layer
     @listen(generate_service)
     def generate_controller(self):
         print("Generating controller layer")
@@ -213,7 +235,47 @@ spring.h2.console.enabled=true
         self.state.controller_result = result.raw  # Save the result in state
         print("Controller_Layer successfully and stored in state.")
 
+    @router(generate_controller)
+    def QaTesting(self):
+        print("QA Testing")
+     
+        if(self.state.flag>3):
+            return "Done"
+        self.state.flag += 1
+        # print("API Result: ", self.state.api_result)
+        result = (
+            QaTester()
+            .crew()
+            .kickoff()
+        )
+        file_path = "final_result.md"
+        self.state.Pass=result["Pass"]
+        self.state.feedback=result["feedback"]
+
+        # Write the API result to the file
+        with open(file_path, "w") as file:
+            file.write(f"final result: {self.state.feedback}\n")
+
+        if self.state.Pass == "True":
+            return "Passed"
+        return "Failed"
+    
+    @listen("Done")
+    def done(self):
+        print("Project Failed to create")
+        print("Please try again")
+
         
+    @listen("Passed")
+    def final(self):
+        print("Project is successfully created and tested")
+       
+    
+        
+
+        
+
+
 def kickoff():
     poem_flow = PoemFlow()
     poem_flow.kickoff()

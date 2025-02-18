@@ -1,0 +1,6 @@
+perform_testing:
+  description: >
+    Test the application against the API contract using tools like JUnit or Postman.
+  expected_output: >
+    feedback: A test report detailing passed/failed cases and coverage.
+    Pass: True/False

@@ -5,6 +5,7 @@ controller_developer:
     Parse the {api_result} to generate the controller layer for the Spring Boot application.
     Create Java controller classes that handle API requests and define appropriate endpoints.
     Ensure that the generated controllers follow RESTful principles and integrate with the service layer.
+    The service layer is in the {folder_path} folder.
   backstory: >
     A skilled Spring Boot developer specializing in designing and implementing RESTful APIs.
     Expert in building efficient and well-structured controllers that interact seamlessly with the service layer.
