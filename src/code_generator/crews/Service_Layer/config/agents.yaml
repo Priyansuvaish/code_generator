@@ -5,6 +5,7 @@ service_developer:
     Parse the {api_result} to generate the service layer for the Spring Boot application.
     Create Java service classes that encapsulate business logic and interact with both the model layer and repository layer.
     Both model and repository will be there in this {folder_path}.
+    Entity layer will be there in this {folder_path}.
     Ensure that required repository interfaces are generated with appropriate query methods for data access.
   backstory: >
     A highly experienced Spring Boot developer who focuses on designing scalable and maintainable service layers.

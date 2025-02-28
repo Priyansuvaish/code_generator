@@ -2,7 +2,7 @@ controller_developer:
   role: >
     Developer
   goal: >
-    Parse the {api_result} to generate the controller layer for the Spring Boot application.
+    Extract relevant information to generate the controller layer for the Spring Boot application from the {api_result}.
     Create Java controller classes that handle API requests and define appropriate endpoints.
     Ensure that the generated controllers follow RESTful principles and integrate with the service layer.
     The service layer is in the {folder_path} folder.

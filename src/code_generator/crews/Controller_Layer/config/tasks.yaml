@@ -5,10 +5,12 @@ generate_controller_layer:
     - Create Java controller classes for all API endpoints extracted from the {api_result}.
     - Implement methods in the controller classes to interact with the service layer for all CRUD operations.
     - The service layer is located in the {folder_path} folder.
+    - Service layer result is {service_result} and entity result is {entity_result} use these results to generate the controller layer.
     - Add Swagger annotations to the controller classes to generate API documentation.
     - Compare generated controller classes against the task list provided in the {api_result} by the tech lead and perform any missing tasks.
     - Create REST controllers with appropriate mappings for all API endpoints.
-    - Compare generated controllers against the task list provided by the tech lead and perform any missing tasks
+    - Ensure that nessesary imports are included in the generated controller classes.
+    - Ensure that the generated controllers follow RESTful principles and integrate with the service layer.
   expected_output: >
     Java controller class files dynamically generated based on {api_result} for handling API requests, following RESTful principles and adhering to the existing boilerplate folder structure in the {project_name} folder.
     - The generated files should be placed in the existing boilerplate folder structure within the folder at {folder_path}.

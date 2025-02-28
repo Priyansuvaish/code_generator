@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from random import randint
-
 from pydantic import BaseModel
 from typing import Optional
 from crewai.flow.flow import Flow, listen, start, router, or_
@@ -39,9 +38,6 @@ class PoemState(BaseModel):
     feedback:Optional[str]=None
     Pass:bool=False
     
-    
-
-
 class PoemFlow(Flow[PoemState]):
 
     @start()  
@@ -66,7 +62,7 @@ class PoemFlow(Flow[PoemState]):
 
         # print("api result: ", result.raw)
         self.state.api_result = result.raw  # Save the result in state
-        file_path = "api_result_3.md"
+        file_path = "api_result.md"
 
         # Write the API result to the file
         with open(file_path, "w") as file:
@@ -169,13 +165,10 @@ spring.h2.console.enabled=true
     @listen(configure_application_properties)
     def generate_model(self):
         print("Generating model layer")
-        print("API Result: ", self.state.api_result)
-        # Example base path
-        base_path = os.path.join(self.state.project_name, "src", "main", "java")
-        # Convert package name to directory path
-        package_path = self.state.package_name.replace('.', os.sep)
-        # Full path to the models directory
-        folder_path = os.path.join(base_path, package_path, self.state.project_name)
+        # print("API Result: ", self.state.api_result)
+        base_path = os.path.join(self.state.project_name, "src", "main", "java") # Example base path
+        package_path = self.state.package_name.replace('.', os.sep) # Convert package name to directory path
+        folder_path = os.path.join(base_path, package_path, self.state.project_name) # Full path to the models directory
         self.state.folder_path = folder_path
         print(f"Entity directory path: {folder_path}")
         result = (
@@ -210,7 +203,8 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'folder_path': self.state.folder_path
+                'folder_path': self.state.folder_path,
+                'entity_result': self.state.entity_result
             })
         )
         # print("Model result: ", result.raw)
@@ -235,7 +229,9 @@ spring.h2.console.enabled=true
                 'api_result': self.state.api_result,
                 'project_name': self.state.project_name,
                 'package_name': self.state.package_name,
-                'folder_path': self.state.folder_path
+                'folder_path': self.state.folder_path,
+                'entity_result': self.state.entity_result,
+                'service_result': self.state.service_result
             })
         )
         # print("Controller result: ", result.raw)
@@ -247,40 +243,42 @@ spring.h2.console.enabled=true
             file.write(f"controller result: {self.state.controller_result}\n")
         print("Controller_Layer successfully and stored in state.")
 
-    @router(generate_controller)
-    def QaTesting(self):
-        print("QA Testing")
+    # @router(generate_controller)
+    # def QaTesting(self):
+    #     print("QA Testing")
      
-        if(self.state.flag>3):
-            return "Done"
-        self.state.flag += 1
-        # print("API Result: ", self.state.api_result)
-        result = (
-            QaTester()
-            .crew()
-            .kickoff()
-        )
-        file_path = "Tester_result.md"
-        self.state.Pass=result["Pass"]
-        self.state.feedback=result["feedback"]
+    #     if(self.state.flag>3):
+    #         return "Done"
+    #     self.state.flag += 1
+    #     # print("API Result: ", self.state.api_result)
+    #     result = (
+    #         QaTester()
+    #         .crew()
+    #         .kickoff()
+    #     )
+    #     file_path = "Tester_result.md"
+    #     self.state.Pass=result["Pass"]
+    #     self.state.feedback=result["feedback"]
 
-        # Write the API result to the file
-        with open(file_path, "w") as file:
-            file.write(f"Tester result: {self.state.feedback}\n")
+    #     # Write the API result to the file
+    #     with open(file_path, "w") as file:
+    #         file.write(f"Pass result: {self.state.Pass}\n")
+    #         file.write(f"Tester result: {self.state.feedback}\n")
 
-        # if self.state.Pass == "True":
-        #     return "Passed"
-        # return "Failed"
-        return "Done"
+    #     if self.state.Pass == "True":
+    #         return "Passed"
+    #     return "Failed"
+        # return "Done"
     
     @listen("Done")
-    def done(self):
+    def Project_Failed(self):
         print("Project Failed to create")
         print("Please try again")
 
         
-    @listen("Passed")
-    def final(self):
+    # @listen("Passed")
+    @listen(generate_controller)
+    def Project_created_successfully(self):
         print("Project is successfully created and tested")
        
     

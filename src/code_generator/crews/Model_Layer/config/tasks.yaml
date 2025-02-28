@@ -7,13 +7,13 @@ generate_model_layer:
     - Utilize the `jakarta.persistence` package for annotations (not `javax.persistence`).
     - Implement relationships (`@OneToMany`, `@ManyToOne`, `@ManyToMany`) based on model dependencies.
     - Use Lombok annotations (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`) to reduce boilerplate code.
-    - Create the `schema.sql` file for database table definitions in `/src/main/resources/`.
-    - If necessary, generate a `data.sql` file with sample data.
+    - Ensure nessesary imports are included for all annotations and classes.
+    
 
   expected_output: >
     Java entity class files dynamically generated based on {api_result}, ensuring proper handling of data persistence.
     - The generated files should be placed in the existing boilerplate folder structure at {folder_path}.
     - If no folder exists at {folder_path}, create a folder named `entity` in the same path and place the generated files inside.
-    - Ensure entity classes follow Spring Boot best practices and match the table definitions in `schema.sql`.
+    - Ensure entity classes follow Spring Boot best practices.
 
 

@@ -4,10 +4,12 @@ generate_service_layer:
     Based on the extracted service methods, create a fully functional service layer with the following steps:
     - Identify all service methods from {api_result} and generate corresponding Java service classes.
     - Implement methods in the service classes to interact with the model layer for all CRUD operations.
+    - Entity layer result is {entity_result} use this to generate the service layer.
     - Identify necessary repository methods that need to be defined for data access.
     - Create corresponding Spring Data JPA repository interfaces based on the service layer requirements.
     - Implement custom query methods in the repository layer using derived queries or `@Query` annotations where necessary.
     - Compare generated service classes and repository interfaces against the task list provided in {api_result} by the tech lead and perform any missing tasks.
+    - Ensure nessessary imports are included for all annotations and classes.
 
   expected_output: >
     Java service class files for handling business logic, adhering to the existing boilerplate folder structure at {folder_path}.

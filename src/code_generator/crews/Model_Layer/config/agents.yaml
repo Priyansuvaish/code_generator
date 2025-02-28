@@ -2,7 +2,7 @@ model_developer:
   role: >
     Model Layer Developer
   goal: >
-    Parse the {api_result} to generate the model layer for the Spring Boot application.
+    Extract the information required to generate the model layer for the Spring Boot application from {api_result}.
     Create Java entity classes based on the extracted data models and ensure they are properly annotated for JPA persistence.
   backstory: >
     A proficient Spring Boot developer specializing in generating and integrating model layers 
