@@ -4,10 +4,17 @@ from crewai_tools import FileReadTool,FileWriterTool,DirectoryReadTool
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import os
+
+from pydantic import BaseModel
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 load_dotenv()
+
+class Controllerresult(BaseModel):
+    report: str 
+    result: str 
+
 
 @CrewBase
 class ControllerLayer:
@@ -33,11 +40,25 @@ class ControllerLayer:
         print("folder_path for service 231",self.folder_path)
         return Agent(
             config=self.agents_config['controller_developer'],
-            allow_delegation=True,
+            # allow_delegation=True,
             verbose=True,
             llm="gpt-4o",
-            tools=[FileWriterTool(),DirectoryReadTool(directory=self.folder_path)],
-            memory=False
+            # tools=[FileWriterTool(),DirectoryReadTool(directory=self.folder_path)],
+            memory=True
+        )
+    
+    @agent
+    def controller_validator(self) -> Agent:
+        if 'controller_validator' not in self.agents_config:
+            raise KeyError("Missing configuration for 'controller_validator' in agents_config.")
+        # print("folder_path for service 231",self.folder_path)
+        return Agent(
+            config=self.agents_config['controller_validator'],
+            # allow_delegation=True,
+            verbose=True,
+            llm="gpt-4o",
+            tools=[FileWriterTool()],
+            memory=True
         )
 
     # To learn more about structured task outputs,
@@ -50,6 +71,16 @@ class ControllerLayer:
         return Task(
             config=self.tasks_config['generate_controller_layer'],
             agent=self.controller_developer()
+        )
+    
+    @task
+    def validate_controller_layer(self) -> Task:
+        if 'validate_controller_layer' not in self.tasks_config:
+            raise KeyError("Missing configuration for 'validate_controller_layer' in tasks_config.")
+        return Task(
+            config=self.tasks_config['validate_controller_layer'],
+            agent=self.controller_validator(),
+            output_pydantic=Controllerresult
         )
 
     @crew

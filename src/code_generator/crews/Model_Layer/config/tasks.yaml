@@ -1,19 +1,32 @@
 generate_model_layer:
   description: >
     Extract relevant information from {api_result} to generate the model layer for the Spring Boot application.
-    Based on the extracted data models, create fully functional entity classes with the following steps:
     - Identify all data models from {api_result} and generate corresponding Java entity classes.
     - Use `@Entity` and `@Table(name = "<table_name>_entity")` annotations to define JPA entities.
     - Utilize the `jakarta.persistence` package for annotations (not `javax.persistence`).
     - Implement relationships (`@OneToMany`, `@ManyToOne`, `@ManyToMany`) based on model dependencies.
     - Use Lombok annotations (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`) to reduce boilerplate code.
-    - Ensure nessesary imports are included for all annotations and classes.
+    - Ensure necessary imports are included for all annotations and classes.
+
+  expected_output: >
+    Java entity class files dynamically generated based on {api_result}.
+
+validate_model_layer:
+  description: >
+    Validate the generated entity classes to ensure correctness.
+    - Ensure all expected entities are generated based on {api_result}.
+    - Check for missing or incorrect annotations (`@Entity`, `@Table`, `@Id`, `@OneToMany`, etc.).
+    - Validate that `jakarta.persistence` annotations are used instead of `javax.persistence`.
+    - Verify relationships (`@OneToMany`, `@ManyToOne`, `@ManyToMany`) are correctly implemented.
+    - Ensure all necessary imports are included.
     
 
   expected_output: >
-    Java entity class files dynamically generated based on {api_result}, ensuring proper handling of data persistence.
-    - The generated files should be placed in the existing boilerplate folder structure at {folder_path}.
-    - If no folder exists at {folder_path}, create a folder named `entity` in the same path and place the generated files inside.
-    - Ensure entity classes follow Spring Boot best practices.
-
-
+    - If validation **passes**,
+      Create java entity class files based on {api_result}, ensuring proper handling of data persistence.
+      - The generated files should be placed in the existing boilerplate folder structure at {folder_path}.
+      - If no folder exists at {folder_path}, create a folder named `entity` in the same path and place the generated files inside.
+      - Ensure entity classes follow Spring Boot best practices.
+    - If validation **fails**, discard the generated output and trigger the generate_model_layer task again.
+    - report : Final report after validation
+    - result : Final class files approved after validation. I don't want path I want only class files.

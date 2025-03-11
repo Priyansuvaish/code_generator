@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from random import randint
+import subprocess
 from pydantic import BaseModel
 from typing import Optional
 from crewai.flow.flow import Flow, listen, start, router, or_
@@ -29,14 +30,19 @@ class PoemState(BaseModel):
     boot_version:str='3.3.0'
     base_url:str = "https://start.spring.io/starter.zip"
     api_result: dict = {}
-    entity_result: dict = {}
+    entity_result: str = ""
+    entity_report: str = ""
     folder_path: str = ""
-    service_result: dict = {}
-    controller_result: dict = {}
+    service_report: str = ""
+    service_result: str = ""
+    controller_result: str = ""
+    controller_report: str = ""
     count: int = 0
     flag: int =0
     feedback:Optional[str]=None
     Pass:bool=False
+    count: int = 0
+    build_output:Optional[str]=""
     
 class PoemFlow(Flow[PoemState]):
 
@@ -49,6 +55,7 @@ class PoemFlow(Flow[PoemState]):
         self.state.dependencies = input("Enter the dependencies (comma separated, e.g., web,jpa): ").split(',')
         self.state.java_version = input("Enter Java version (default 11): ") or '11'
         self.state.language = input("Enter language (java/kotlin, default java): ") or 'java'
+        #self.state.count+=1
 
     #We are parsing the api and storing the result in the state
     @listen(or_("Unsuccessful",Intialization))
@@ -70,6 +77,7 @@ class PoemFlow(Flow[PoemState]):
 
         print(f"API result written to {file_path}")
         print("API parsed successfully and stored in state.")
+        #self.state.count+=1
 
 
 
@@ -87,6 +95,7 @@ class PoemFlow(Flow[PoemState]):
             .crew()
             .kickoff(inputs={'api_result': self.state.api_result})
         )
+        #self.state.count+=1
         file_path = "evaluator_result.md"
 
         # Write the API result to the file
@@ -96,6 +105,7 @@ class PoemFlow(Flow[PoemState]):
         if result.raw == "Successful":
             return "Successful"
         return "Unsuccessful"
+        
 
     
 
@@ -116,7 +126,8 @@ class PoemFlow(Flow[PoemState]):
         response = requests.get(self.state.base_url, params=params)
         print("Response Status Code:", response.status_code)
         print("Response Content:", response.text)
-
+        #self.state.count+=1
+        response.close()
         if response.status_code == 200:
             zip_file_path = f'{self.state.project_name}.zip'
             with open(f'{self.state.project_name}.zip', 'wb') as file:
@@ -135,6 +146,7 @@ class PoemFlow(Flow[PoemState]):
         else:
             return "Failed"
         
+        
 
     #creating the application.properties file
     @listen(generate_spring_boot_project)
@@ -148,7 +160,7 @@ spring.h2.console.enabled=true
 """
 
         properties_file_path = os.path.join(self.state.project_name, "src", "main", "resources", "application.properties")
-
+        #self.state.count+=1
         if not os.path.exists(os.path.dirname(properties_file_path)):
             os.makedirs(os.path.dirname(properties_file_path))
 
@@ -170,6 +182,7 @@ spring.h2.console.enabled=true
         package_path = self.state.package_name.replace('.', os.sep) # Convert package name to directory path
         folder_path = os.path.join(base_path, package_path, self.state.project_name) # Full path to the models directory
         self.state.folder_path = folder_path
+        #self.state.count+=1
         print(f"Entity directory path: {folder_path}")
         result = (
             ModelLayer()
@@ -182,17 +195,24 @@ spring.h2.console.enabled=true
             })
         )
         # print("Model result: ", result.raw)
-        self.state.entity_result = result.raw  # Save the result in state
+        self.state.entity_report = result["report"]
+        self.state.entity_result = result["result"] # Save the result in state
         file_path = "model_result.md"
+        report_path = "model_report.md"
 
         # Write the API result to the file
         with open(file_path, "w") as file:
             file.write(f"model result: {self.state.entity_result}\n")
+        
+        with open(report_path, "w") as file:
+            file.write(f"model report: {self.state.entity_report}\n")
+
+
         print("Entity_layer successfully and stored in state.")
 
     
 
-    #We are generating the service layer
+    # We are generating the service layer
     @listen(generate_model)
     def generate_service(self):
         print("Generating service layer")
@@ -207,13 +227,21 @@ spring.h2.console.enabled=true
                 'entity_result': self.state.entity_result
             })
         )
+        #self.state.count+=1
         # print("Model result: ", result.raw)
-        self.state.service_result = result.raw  # Save the result in state
+          # Save the result in state
+        self.state.service_report = result["report"]
+        self.state.service_result = result["result"] 
         file_path = "service_result.md"
+        report_path = "service_report.md"
 
         # Write the API result to the file
         with open(file_path, "w") as file:
             file.write(f"service result: {self.state.service_result}\n")
+
+        with open(report_path, "w") as file:
+            file.write(f"service report: {self.state.service_report}\n")
+        
         print("Service_Layer successfully and stored in state.")
 
 
@@ -222,6 +250,7 @@ spring.h2.console.enabled=true
     @listen(generate_service)
     def generate_controller(self):
         print("Generating controller layer")
+        #self.state.count+=1
         result = (
             ControllerLayer(folder_path=self.state.folder_path)
             .crew()
@@ -235,12 +264,19 @@ spring.h2.console.enabled=true
             })
         )
         # print("Controller result: ", result.raw)
-        self.state.controller_result = result.raw  # Save the result in state
+        # Save the result in state
+        self.state.controller_report = result["report"]
+        self.state.controller_result = result["result"] 
         file_path = "controller_result.md"
+        report_path = "controller_report.md"
 
         # Write the API result to the file
         with open(file_path, "w") as file:
             file.write(f"controller result: {self.state.controller_result}\n")
+
+        with open(report_path, "w") as file:
+            file.write(f"controller report: {self.state.controller_report}\n")
+            
         print("Controller_Layer successfully and stored in state.")
 
     # @router(generate_controller)
@@ -269,6 +305,43 @@ spring.h2.console.enabled=true
     #         return "Passed"
     #     return "Failed"
         # return "Done"
+
+
+    @listen(generate_controller)
+    def build_and_run_springboot(self):
+        try:
+            project_directory = os.path.abspath(self.state.project_name)
+            print(f"Project directory: {project_directory}")
+            # Navigate to the Spring Boot project directory
+            if os.path.exists(project_directory):
+                os.chdir(project_directory)
+                print("Directory exists:", os.listdir(project_directory))
+            else:
+                print("Directory does not exist:", project_directory)
+                return
+            
+            # Build the project
+            build_command = ["mvn", "clean", "package"]
+            build_process=subprocess.run(build_command,stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+            if build_process.returncode == 0:
+                print("Build Success!")
+            else:
+                self.state.build_output=build_process.stdout.decode()
+                print("Build Output:", self.state.build_output)
+                return "buildfail"
+
+            # Run the built JAR file
+            jar_file = f"target/{self.state.project_name}-0.0.1-SNAPSHOT.jar"  # Adjust according to your project
+            run_command = ["java", "-jar", jar_file]
+            subprocess.Popen(run_command,shell=True)
+
+            print("Spring Boot application is running...")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during build or execution: {e}")
+        except FileNotFoundError as e:
+            print(f"Directory not found: {project_directory}. Please check the path.")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
     
     @listen("Done")
     def Project_Failed(self):
@@ -277,9 +350,11 @@ spring.h2.console.enabled=true
 
         
     # @listen("Passed")
-    @listen(generate_controller)
-    def Project_created_successfully(self):
-        print("Project is successfully created and tested")
+    # @listen(generate_controller)
+    # def Project_created_successfully(self):
+    #     #self.state.count+=1
+    #     print("Project is successfully created and tested")
+    #     # print("count:",self.state.count)
        
     
         

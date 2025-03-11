@@ -4,9 +4,19 @@ service_developer:
   goal: >
     Parse the {api_result} to generate the service layer for the Spring Boot application.
     Create Java service classes that encapsulate business logic and interact with both the model layer and repository layer.
-    Both model and repository will be there in this {folder_path}.
-    Entity layer will be there in this {folder_path}.
+    Entity layer result is {entity_result}; use this to generate the service layer.
     Ensure that required repository interfaces are generated with appropriate query methods for data access.
   backstory: >
     A highly experienced Spring Boot developer who focuses on designing scalable and maintainable service layers.
     Proficient in implementing business logic and managing interactions between the controller, model, and repository layers.
+
+service_validator:
+  role: >
+    Service Layer Validator
+  goal: >
+    Validate the generated service and repository classes by service_developer agent to ensure correctness and adherence to Spring Boot best practices based on {api_result}.
+    If validation passes, approve the files for writing to {folder_path}.
+    If validation fails, discard the generated files and trigger the service_developer agent again.
+  backstory: >
+    A highly experienced Spring Boot developer responsible for reviewing service logic and repository interfaces to ensure 
+    clean architecture, maintainability, and compliance with business logic requirements.

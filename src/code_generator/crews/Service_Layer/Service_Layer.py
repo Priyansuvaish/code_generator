@@ -16,6 +16,9 @@ load_dotenv()
 #     api_result: dict = {}
 #     package_name: str = ""
 
+class Serviceresult(BaseModel):
+    report: str 
+    result: str 
 
 
 @CrewBase
@@ -41,11 +44,25 @@ class ServiceLayer():
         print("folder_path for service 231",self.folder_path)
         return Agent(
             config=self.agents_config['service_developer'],
-            allow_delegation=True,
+            # allow_delegation=True,
             verbose=True,
             llm="gpt-4o",
-            tools=[FileWriterTool(),DirectoryReadTool(directory=self.folder_path)],
-            memory=False
+            # tools=[FileWriterTool(),DirectoryReadTool(directory=self.folder_path)],
+            memory=True
+        )
+    
+    @agent
+    def service_validator(self) -> Agent:
+        if 'service_validator' not in self.agents_config:
+            raise KeyError("Missing configuration for 'service_validator' in agents_config.")
+        print("folder_path for service 231",self.folder_path)
+        return Agent(
+            config=self.agents_config['service_validator'],
+            # allow_delegation=True,
+            verbose=True,
+            llm="gpt-4o",
+            tools=[FileWriterTool()],
+            memory=True
         )
 
     # To learn more about structured task outputs,
@@ -58,6 +75,16 @@ class ServiceLayer():
         return Task(
             config=self.tasks_config['generate_service_layer'],
             agent=self.service_developer()
+        )
+    
+    @task
+    def validate_service_layer(self) -> Task:
+        if 'validate_service_layer' not in self.tasks_config:
+            raise KeyError("Missing configuration for 'validate_service_layer' in tasks_config.")
+        return Task(
+            config=self.tasks_config['validate_service_layer'],
+            agent=self.service_validator(),
+            output_pydantic=Serviceresult
         )
 
     @crew

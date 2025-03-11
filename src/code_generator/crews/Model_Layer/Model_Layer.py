@@ -5,10 +5,16 @@ from crewai_tools import FileReadTool,FileWriterTool
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import os
+
+from pydantic import BaseModel
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 load_dotenv()
+
+class Modelresult(BaseModel):
+    report: str 
+    result: str 
 
 @CrewBase
 class ModelLayer:
@@ -29,11 +35,23 @@ class ModelLayer:
             raise KeyError("Missing configuration for 'model_developer' in agents_config.")
         return Agent(
             config=self.agents_config['model_developer'],
-            allow_delegation=True,
+            # allow_delegation=True,
+            verbose=True,
+            llm="gpt-4o",
+            # tools=[FileWriterTool()],
+            memory=True,
+        )
+    @agent
+    def model_validator(self) -> Agent:
+        if 'model_validator' not in self.agents_config:
+            raise KeyError("Missing configuration for 'model_validator' in agents_config.")
+        return Agent(
+            config=self.agents_config['model_validator'],
+            # allow_delegation=True,
             verbose=True,
             llm="gpt-4o",
             tools=[FileWriterTool()],
-            memory=False,
+            memory=True,
         )
 
     # To learn more about structured task outputs,
@@ -46,6 +64,16 @@ class ModelLayer:
         return Task(
             config=self.tasks_config['generate_model_layer'],
             agent=self.model_developer()
+        )
+    
+    @task
+    def validate_model_layer(self) -> Task:
+        if 'validate_model_layer' not in self.tasks_config:
+            raise KeyError("Missing configuration for 'validate_model_layer' in tasks_config.")
+        return Task(
+            config=self.tasks_config['validate_model_layer'],
+            agent=self.model_validator(),
+            output_pydantic=Modelresult
         )
 
     # @task

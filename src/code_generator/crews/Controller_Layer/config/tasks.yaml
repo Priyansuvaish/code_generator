@@ -1,21 +1,36 @@
 generate_controller_layer:
   description: >
-    Extract relavent information from {api_result} to generate the controller layer for the Spring Boot application.
-    Based on the Implementation Requirements for the Spring Boot Application, create a fully functional controller layer with the following steps:
+    Extract relevant information from {api_result} to generate the controller layer for the Spring Boot application.
+    Based on the implementation requirements for the Spring Boot application, create a fully functional controller layer with the following steps:
     - Create Java controller classes for all API endpoints extracted from the {api_result}.
     - Implement methods in the controller classes to interact with the service layer for all CRUD operations.
-    - The service layer is located in the {folder_path} folder.
-    - Service layer result is {service_result} and entity result is {entity_result} use these results to generate the controller layer.
+    - Service layer result is {service_result}, and entity result is {entity_result}; use these results to generate the controller layer.
     - Add Swagger annotations to the controller classes to generate API documentation.
+    - Create REST controllers with appropriate mappings (`@RestController`, `@RequestMapping`, `@GetMapping`, `@PostMapping`, etc.).
     - Compare generated controller classes against the task list provided in the {api_result} by the tech lead and perform any missing tasks.
-    - Create REST controllers with appropriate mappings for all API endpoints.
-    - Ensure that nessesary imports are included in the generated controller classes.
+    - Ensure that necessary imports are included in the generated controller classes.
     - Ensure that the generated controllers follow RESTful principles and integrate with the service layer.
+
   expected_output: >
-    Java controller class files dynamically generated based on {api_result} for handling API requests, following RESTful principles and adhering to the existing boilerplate folder structure in the {project_name} folder.
-    - The generated files should be placed in the existing boilerplate folder structure within the folder at {folder_path}.
-    - If there is no folder at {folder_path}, create a folder following the same path named 'controller' and place the generated files in it.
-    - The generated files should be structured properly following Spring Boot conventions.
+    Java controller class files dynamically generated based on {api_result} for handling API requests, following RESTful principles.
 
 
-    
+validate_controller_layer:
+  description: >
+    Validate the generated controller classes to ensure correctness and best practices.
+    - Ensure all expected controllers and API endpoints are implemented based on {api_result}.
+    - Verify that controller methods interact correctly with the service layer.
+    - Check that all REST endpoints are correctly annotated with `@RestController`, `@RequestMapping`, `@GetMapping`, `@PostMapping`, etc.
+    - Ensure Swagger annotations are present for API documentation (`@Operation`, `@ApiResponses`, etc.).
+    - Validate that all required imports are included.
+
+
+  expected_output: >
+    - If validation **passes**:
+      Create java controller class files generated based on {api_result} for handling API requests, following RESTful principles and adhering to the existing boilerplate folder structure in the {project_name} folder.
+      - The generated files should be placed in the existing boilerplate folder structure within the folder at {folder_path}.
+      - If there is no folder at {folder_path}, create a folder following the same path named `controller` and place the generated files in it.
+      - The generated files should be structured properly following Spring Boot conventions.
+    - If validation **fails**, discard the generated output and trigger the generate_controller_layer task again.
+    - report : Final report after validation
+    - result : Final class files approved after validation. I don't want path I want only class files.
